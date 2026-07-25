@@ -1,13 +1,19 @@
-model Profile {
-  id           String  @id @default(uuid())
-  profilePhoto String?
-  bio          String?
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-
+model TechnicianProfile {
+  id            String  @id @default(uuid())
+  userId        String @unique
+  bio           String?
+  experience    Int
+  location      String
+  hourlyRate    Float
+  averageRating Float @default(0)
+  isAvailable   Boolean @default(true)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // services Service[]
+  // bookings Booking[]
+  // reviews Review[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
 
-  @@map("profiles")
+  @@map("technicianProfiles")
 }
