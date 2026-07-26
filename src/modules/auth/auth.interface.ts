@@ -5,3 +5,8 @@ export interface IRegisterUser {
   phone?: string;
   role: "CUSTOMER" | "TECHNICIAN";
 }
+
+export interface ILoginUser {
+  email: string;
+  password: string;
+}
