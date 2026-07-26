@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
 import config from "./config";
+import { authRoutes } from "./modules/auth/auth.route";
 import { userRouters } from "./modules/user/user.route";
 
 const app: Application = express();
@@ -13,7 +14,7 @@ app.use(
   }),
 );
 
-app.use("/api/subscription/webhook", express.raw({ type: "application/json" }));
+// app.use("/api/subscription/webhook", express.raw({ type: "application/json" }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -23,6 +24,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/users", userRouters);
 
 export default app;
