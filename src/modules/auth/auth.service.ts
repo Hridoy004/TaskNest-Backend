@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
+import { SignOptions } from "jsonwebtoken";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
+import { jwtUtils } from "../../utils/jwt";
 import { ILoginUser, IRegisterUser } from "./auth.interface";
 
 const registerUserIntoDB = async (payload: IRegisterUser) => {
@@ -66,6 +68,10 @@ const loginUser = async (payload: ILoginUser) => {
     where: { email },
   });
 
+  if (!user) {
+    throw new Error("Invalid email or password");
+  }
+
   if (user.activeStatus === "BLOCKED") {
     throw new Error("Your account has been blocked. Please contact support.");
   }
@@ -75,9 +81,33 @@ const loginUser = async (payload: ILoginUser) => {
   if (!isPasswordMatched) {
     throw new Error("Password is incorrect");
   }
+
+  const jwtPayload = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_access_secret,
+    config.jwt_access_expires_in as SignOptions,
+  );
+
+  const refreshToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expires_in as SignOptions,
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
 };
 
-export const userService = {
+export const authService = {
   registerUserIntoDB,
   loginUser,
 };
