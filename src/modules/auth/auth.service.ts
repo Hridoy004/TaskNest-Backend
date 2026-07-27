@@ -16,6 +16,10 @@ const registerUserIntoDB = async (payload: IRegisterUser) => {
     throw new Error("User with this email already exists");
   }
 
+  if (role === "ADMIN") {
+    throw new Error("Admin registration is not allowed");
+  }
+
   const hashedPassword = await bcrypt.hash(
     password,
     Number(config.bcrypt_salt_rounds),
