@@ -106,6 +106,45 @@ const getAllTechniciansFromDB = async (query: ITechnicianQuery) => {
   };
 };
 
+const getSingleTechnicianFromDB = async (id: string) => {
+  const technician = await prisma.technicianProfile.findUnique({
+    where: {
+      id,
+    },
+
+    include: {
+      user: {
+        omit: {
+          password: true,
+        },
+      },
+
+      services: {
+        include: {
+          category: true,
+        },
+      },
+
+      reviews: {
+        include: {
+          customer: {
+            omit: {
+              password: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!technician) {
+    throw new Error("Technician not found");
+  }
+
+  return technician;
+};
+
 export const technicianService = {
   getAllTechniciansFromDB,
+  getSingleTechnicianFromDB,
 };

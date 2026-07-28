@@ -5,4 +5,6 @@ const router = Router();
 
 router.get("/", technicianController.getAllTechnicians);
 
+router.get("/:id", technicianController.getSingleTechnician);
+
 export const technicianRoutes = router;

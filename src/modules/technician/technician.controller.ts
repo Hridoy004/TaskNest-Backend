@@ -18,6 +18,22 @@ const getAllTechnicians = catchAsync(
   },
 );
 
+const getSingleTechnician = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await technicianService.getSingleTechnicianFromDB(
+    id as string,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Technician retrieved successfully",
+    data: result,
+  });
+});
+
 export const technicianController = {
   getAllTechnicians,
+  getSingleTechnician,
 };
