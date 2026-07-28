@@ -5,6 +5,7 @@ import config from "./config";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { notFound } from "./middlewares/notFound";
 import { authRoutes } from "./modules/auth/auth.route";
+import { technicianRoutes } from "./modules/technician/technician.route";
 import { userRouters } from "./modules/user/user.route";
 
 const app: Application = express();
@@ -28,6 +29,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRouters);
+app.use("/api/technicians", technicianRoutes);
 
 app.use(notFound);
 app.use(globalErrorHandler);

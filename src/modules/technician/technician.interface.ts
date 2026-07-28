@@ -1,0 +1,13 @@
+export interface ITechnicianQuery {
+  searchTerm?: string;
+  location?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  isAvailable?: string;
+
+  page?: string;
+  limit?: string;
+
+  sortBy?: string;
+  sortOrder?: string;
+}
