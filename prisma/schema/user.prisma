@@ -1,24 +1,22 @@
 model User {
-  id           String       @id @default(uuid())
-  name         String       @db.VarChar(225)
-  email        String       @unique
+  id           String             @id @default(uuid())
+  name         String             @db.VarChar(225)
+  email        String             @unique
   password     String
   phone        String?
   image        String?
-  role         Role 
-  activeStatus ActiveStatus @default(ACTIVE)
+  role         Role
+  activeStatus ActiveStatus       @default(ACTIVE)
   technician   TechnicianProfile?
-  // bookings    Booking[]
-  // reviews     Review[]
+  bookings     Booking[]
+  reviews      Review[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
- //   subscription Subscription?
- //   posts    Post[]
- //   comments Comment[]
+  //   subscription Subscription?
+  //   posts    Post[]
+  //   comments Comment[]
 
   @@map("users")
 }
-
-
