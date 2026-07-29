@@ -18,3 +18,7 @@ export interface IUpdateTechnicianProfile {
   location?: string;
   hourlyRate?: number;
 }
+
+export interface IUpdateAvailability {
+  isAvailable: boolean;
+}

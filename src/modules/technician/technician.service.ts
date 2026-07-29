@@ -2,6 +2,7 @@ import { TechnicianProfileWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import {
   ITechnicianQuery,
+  IUpdateAvailability,
   IUpdateTechnicianProfile,
 } from "./technician.interface";
 
@@ -179,8 +180,31 @@ const updateTechnicianProfileIntoDB = async (
   return result;
 };
 
+const updateAvailabilityIntoDB = async (
+  userId: string,
+  payload: IUpdateAvailability,
+) => {
+  const technician = await prisma.technicianProfile.findUniqueOrThrow({
+    where: {
+      userId,
+    },
+  });
+
+  const result = await prisma.technicianProfile.update({
+    where: {
+      id: technician.id,
+    },
+    data: {
+      isAvailable: payload.isAvailable,
+    },
+  });
+
+  return result;
+};
+
 export const technicianService = {
   getAllTechniciansFromDB,
   getSingleTechnicianFromDB,
   updateTechnicianProfileIntoDB,
+  updateAvailabilityIntoDB,
 };

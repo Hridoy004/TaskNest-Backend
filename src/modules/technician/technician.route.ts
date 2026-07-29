@@ -15,4 +15,10 @@ router.put(
   technicianController.updateTechnicianProfile,
 );
 
+router.put(
+  "/availability",
+  auth(Role.TECHNICIAN),
+  technicianController.updateAvailability,
+);
+
 export const technicianRoutes = router;
