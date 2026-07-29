@@ -4,6 +4,7 @@ import express, { Application, Request, Response } from "express";
 import config from "./config";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { notFound } from "./middlewares/notFound";
+import { adminRoutes } from "./modules/admin/admin.route";
 import { authRoutes } from "./modules/auth/auth.route";
 import { technicianRoutes } from "./modules/technician/technician.route";
 import { userRouters } from "./modules/user/user.route";
@@ -30,6 +31,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRouters);
 app.use("/api/technicians", technicianRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use(notFound);
 app.use(globalErrorHandler);
