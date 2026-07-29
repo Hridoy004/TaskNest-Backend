@@ -1,6 +1,9 @@
 import { TechnicianProfileWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
-import { ITechnicianQuery } from "./technician.interface";
+import {
+  ITechnicianQuery,
+  IUpdateTechnicianProfile,
+} from "./technician.interface";
 
 const getAllTechniciansFromDB = async (query: ITechnicianQuery) => {
   const limit = query.limit ? Number(query.limit) : 10;
@@ -144,7 +147,40 @@ const getSingleTechnicianFromDB = async (id: string) => {
   return technician;
 };
 
+const updateTechnicianProfileIntoDB = async (
+  userId: string,
+  payload: IUpdateTechnicianProfile,
+) => {
+  const technician = await prisma.technicianProfile.findUniqueOrThrow({
+    where: {
+      userId,
+    },
+  });
+
+  const result = await prisma.technicianProfile.update({
+    where: {
+      id: technician.id,
+    },
+    data: payload,
+    include: {
+      user: {
+        omit: {
+          password: true,
+        },
+      },
+      services: {
+        include: {
+          category: true,
+        },
+      },
+    },
+  });
+
+  return result;
+};
+
 export const technicianService = {
   getAllTechniciansFromDB,
   getSingleTechnicianFromDB,
+  updateTechnicianProfileIntoDB,
 };

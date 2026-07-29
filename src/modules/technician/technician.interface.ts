@@ -11,3 +11,10 @@ export interface ITechnicianQuery {
   sortBy?: string;
   sortOrder?: string;
 }
+
+export interface IUpdateTechnicianProfile {
+  bio?: string;
+  experience?: number;
+  location?: string;
+  hourlyRate?: number;
+}
