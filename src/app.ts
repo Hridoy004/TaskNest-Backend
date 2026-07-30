@@ -6,6 +6,7 @@ import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { notFound } from "./middlewares/notFound";
 import { adminRoutes } from "./modules/admin/admin.route";
 import { authRoutes } from "./modules/auth/auth.route";
+import { ServiceRoutes } from "./modules/service/service.route";
 import { technicianRoutes } from "./modules/technician/technician.route";
 import { userRouters } from "./modules/user/user.route";
 
@@ -32,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRouters);
 app.use("/api/technicians", technicianRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/services", ServiceRoutes);
 
 app.use(notFound);
 app.use(globalErrorHandler);
