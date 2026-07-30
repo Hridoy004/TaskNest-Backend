@@ -54,8 +54,47 @@ const getSingleBooking = catchAsync(
   },
 );
 
+const updateBookingStatus = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    const result = await bookingService.updateBookingStatusIntoDB(
+      id as string,
+      req.body,
+      req.user as IJwtPayload,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Booking status updated successfully",
+      data: result,
+    });
+  },
+);
+
+const cancelBooking = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    const result = await bookingService.cancelBookingIntoDB(
+      id as string,
+      req.user as IJwtPayload,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Booking cancelled successfully",
+      data: result,
+    });
+  },
+);
+
 export const bookingController = {
   createBooking,
   getMyBookings,
   getSingleBooking,
+  updateBookingStatus,
+  cancelBooking,
 };

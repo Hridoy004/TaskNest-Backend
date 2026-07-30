@@ -1,6 +1,14 @@
-import { UserWhereInput } from "../../../generated/prisma/models";
+import {
+  BookingWhereInput,
+  UserWhereInput,
+} from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
-import { ICategory, IUpdateUserStatus, IUserQuery } from "./admin.interface";
+import {
+  IBookingQuery,
+  ICategory,
+  IUpdateUserStatus,
+  IUserQuery,
+} from "./admin.interface";
 
 const getAllUsersFromDB = async (query: IUserQuery) => {
   const limit = query.limit ? Number(query.limit) : 10;
@@ -110,6 +118,96 @@ const updateUserStatusIntoDB = async (
   return result;
 };
 
+const getAllBookingsFromDB = async (query: IBookingQuery) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
+
+  const sortBy = query.sortBy || "createdAt";
+  const sortOrder = query.sortOrder || "desc";
+
+  const andConditions: BookingWhereInput[] = [];
+
+  if (query.status) {
+    andConditions.push({
+      status: query.status,
+    });
+  }
+
+  if (query.customerId) {
+    andConditions.push({
+      customerId: query.customerId,
+    });
+  }
+
+  if (query.technicianId) {
+    andConditions.push({
+      technicianId: query.technicianId,
+    });
+  }
+
+  if (query.serviceId) {
+    andConditions.push({
+      serviceId: query.serviceId,
+    });
+  }
+
+  const bookings = await prisma.booking.findMany({
+    where: {
+      AND: andConditions,
+    },
+
+    skip,
+    take: limit,
+
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
+
+    include: {
+      customer: {
+        omit: {
+          password: true,
+        },
+      },
+
+      technician: {
+        include: {
+          user: {
+            omit: {
+              password: true,
+            },
+          },
+        },
+      },
+
+      service: {
+        include: {
+          category: true,
+        },
+      },
+
+      review: true,
+    },
+  });
+
+  const total = await prisma.booking.count({
+    where: {
+      AND: andConditions,
+    },
+  });
+
+  return {
+    data: bookings,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
 const createCategoryIntoDB = async (payload: ICategory, userId: string) => {
   const user = await prisma.user.findUniqueOrThrow({
     where: {
@@ -206,6 +304,7 @@ const deleteCategoryFromDB = async (id: string) => {
 export const adminService = {
   getAllUsersFromDB,
   updateUserStatusIntoDB,
+  getAllBookingsFromDB,
   createCategoryIntoDB,
   getAllCategoriesFromDB,
   getSingleCategoryFromDB,

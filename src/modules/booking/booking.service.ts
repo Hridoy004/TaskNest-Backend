@@ -1,6 +1,10 @@
 import { Role } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
-import { ICreateBooking, IJwtPayload } from "./booking.interface";
+import {
+  ICreateBooking,
+  IJwtPayload,
+  IUpdateBookingStatus,
+} from "./booking.interface";
 
 const createBookingIntoDB = async (payload: ICreateBooking, userId: string) => {
   const service = await prisma.service.findUnique({
@@ -160,8 +164,133 @@ const getSingleBookingFromDB = async (id: string, user: IJwtPayload) => {
   return booking;
 };
 
+const updateBookingStatusIntoDB = async (
+  bookingId: string,
+  payload: IUpdateBookingStatus,
+  user: IJwtPayload,
+) => {
+  const booking = await prisma.booking.findUnique({
+    where: {
+      id: bookingId,
+    },
+  });
+
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
+
+  const technician = await prisma.technicianProfile.findUniqueOrThrow({
+    where: {
+      userId: user.id,
+    },
+  });
+
+  if (booking.technicianId !== technician.id) {
+    throw new Error("You are not authorized to update this booking");
+  }
+
+  const validTransitions: Record<string, string[]> = {
+    REQUESTED: ["ACCEPTED", "DECLINED"],
+    PAID: ["IN_PROGRESS"],
+    IN_PROGRESS: ["COMPLETED"],
+  };
+
+  const allowedStatus = validTransitions[booking.status] || [];
+
+  if (!allowedStatus.includes(payload.status)) {
+    throw new Error(
+      `Cannot change booking status from ${booking.status} to ${payload.status}`,
+    );
+  }
+
+  const result = await prisma.booking.update({
+    where: {
+      id: bookingId,
+    },
+    data: {
+      status: payload.status,
+    },
+    include: {
+      customer: {
+        omit: {
+          password: true,
+        },
+      },
+      technician: {
+        include: {
+          user: {
+            omit: {
+              password: true,
+            },
+          },
+        },
+      },
+      service: true,
+    },
+  });
+
+  return result;
+};
+
+const cancelBookingIntoDB = async (bookingId: string, user: IJwtPayload) => {
+  const booking = await prisma.booking.findUnique({
+    where: {
+      id: bookingId,
+    },
+  });
+
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
+
+  if (booking.customerId !== user.id) {
+    throw new Error("You are not authorized to cancel this booking");
+  }
+
+  if (
+    booking.status === "IN_PROGRESS" ||
+    booking.status === "COMPLETED" ||
+    booking.status === "DECLINED" ||
+    booking.status === "CANCELLED"
+  ) {
+    throw new Error(
+      `Booking cannot be cancelled because it is ${booking.status}`,
+    );
+  }
+
+  const result = await prisma.booking.update({
+    where: {
+      id: bookingId,
+    },
+    data: {
+      status: "CANCELLED",
+    },
+    include: {
+      customer: {
+        omit: {
+          password: true,
+        },
+      },
+      technician: {
+        include: {
+          user: {
+            omit: {
+              password: true,
+            },
+          },
+        },
+      },
+      service: true,
+    },
+  });
+
+  return result;
+};
+
 export const bookingService = {
   createBookingIntoDB,
   getMyBookingsFromDB,
   getSingleBookingFromDB,
+  updateBookingStatusIntoDB,
+  cancelBookingIntoDB,
 };
