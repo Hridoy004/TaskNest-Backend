@@ -18,78 +18,107 @@ const getAllUsers = catchAsync(
   },
 );
 
-const createCategory = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.id;
-  const payload = req.body;
+const updateUserStatus = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
 
-  const result = await adminService.createCategoryIntoDB(
-    payload,
-    userId as string,
-  );
+    const result = await adminService.updateUserStatusIntoDB(
+      id as string,
+      req.body,
+    );
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.CREATED,
-    message: "Category created successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "User status updated successfully",
+      data: result,
+    });
+  },
+);
 
-const getAllCategories = catchAsync(async (req: Request, res: Response) => {
-  const result = await adminService.getAllCategoriesFromDB();
+const createCategory = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.id;
+    const payload = req.body;
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Categories retrieved successfully",
-    data: result,
-  });
-});
+    const result = await adminService.createCategoryIntoDB(
+      payload,
+      userId as string,
+    );
 
-const getSingleCategory = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.CREATED,
+      message: "Category created successfully",
+      data: result,
+    });
+  },
+);
 
-  const result = await adminService.getSingleCategoryFromDB(id as string);
+const getAllCategories = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await adminService.getAllCategoriesFromDB();
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Category retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Categories retrieved successfully",
+      data: result,
+    });
+  },
+);
 
-const updateCategory = catchAsync(async (req: Request, res: Response) => {
-  const categoryId = req.params.id;
-  const payload = req.body;
+const getSingleCategory = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
 
-  const result = await adminService.updateCategoryIntoDB(
-    categoryId as string,
-    payload,
-  );
+    const result = await adminService.getSingleCategoryFromDB(id as string);
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Category updated successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Category retrieved successfully",
+      data: result,
+    });
+  },
+);
 
-const deleteCategory = catchAsync(async (req: Request, res: Response) => {
-  const categoryId = req.params.id;
-  await adminService.deleteCategoryFromDB(categoryId as string);
+const updateCategory = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const categoryId = req.params.id;
+    const payload = req.body;
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Category deleted successfully",
-    data: null,
-  });
-});
+    const result = await adminService.updateCategoryIntoDB(
+      categoryId as string,
+      payload,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Category updated successfully",
+      data: result,
+    });
+  },
+);
+
+const deleteCategory = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const categoryId = req.params.id;
+    await adminService.deleteCategoryFromDB(categoryId as string);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Category deleted successfully",
+      data: null,
+    });
+  },
+);
 
 export const adminController = {
   getAllUsers,
+  updateUserStatus,
   createCategory,
   getAllCategories,
   getSingleCategory,

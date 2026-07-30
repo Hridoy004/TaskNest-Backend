@@ -7,6 +7,8 @@ const router = Router();
 
 router.get("/users", auth(Role.ADMIN), adminController.getAllUsers);
 
+router.patch("/users/:id", auth(Role.ADMIN), adminController.updateUserStatus);
+
 router.post("/categories", auth(Role.ADMIN), adminController.createCategory);
 
 router.get("/categories", auth(Role.ADMIN), adminController.getAllCategories);

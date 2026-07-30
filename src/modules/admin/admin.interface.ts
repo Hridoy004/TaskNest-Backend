@@ -13,3 +13,7 @@ export interface IUserQuery {
   sortBy?: string;
   sortOrder?: string;
 }
+
+export interface IUpdateUserStatus {
+  activeStatus: ActiveStatus;
+}

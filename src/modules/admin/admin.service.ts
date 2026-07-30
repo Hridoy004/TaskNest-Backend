@@ -1,6 +1,6 @@
 import { UserWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
-import { ICategory, IUserQuery } from "./admin.interface";
+import { ICategory, IUpdateUserStatus, IUserQuery } from "./admin.interface";
 
 const getAllUsersFromDB = async (query: IUserQuery) => {
   const limit = query.limit ? Number(query.limit) : 10;
@@ -79,6 +79,35 @@ const getAllUsersFromDB = async (query: IUserQuery) => {
       totalPages: Math.ceil(total / limit),
     },
   };
+};
+
+const updateUserStatusIntoDB = async (
+  id: string,
+  payload: IUpdateUserStatus,
+) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const result = await prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      activeStatus: payload.activeStatus,
+    },
+    omit: {
+      password: true,
+    },
+  });
+
+  return result;
 };
 
 const createCategoryIntoDB = async (payload: ICategory, userId: string) => {
@@ -176,6 +205,7 @@ const deleteCategoryFromDB = async (id: string) => {
 
 export const adminService = {
   getAllUsersFromDB,
+  updateUserStatusIntoDB,
   createCategoryIntoDB,
   getAllCategoriesFromDB,
   getSingleCategoryFromDB,
