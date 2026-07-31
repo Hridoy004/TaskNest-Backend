@@ -8,6 +8,8 @@ import { adminRoutes } from "./modules/admin/admin.route";
 import { authRoutes } from "./modules/auth/auth.route";
 import { bookingRoutes } from "./modules/booking/booking.route";
 import { categoryRoutes } from "./modules/category/category.route";
+import { paymentRoutes } from "./modules/payment/payment.route";
+import { reviewRouters } from "./modules/review/review.route";
 import { ServiceRoutes } from "./modules/service/service.route";
 import { technicianRoutes } from "./modules/technician/technician.route";
 
@@ -20,7 +22,7 @@ app.use(
   }),
 );
 
-// app.use("/api/subscription/webhook", express.raw({ type: "application/json" }));
+app.use("/api/payments/confirm", express.raw({ type: "application/json" }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -36,6 +38,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/services", ServiceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/reviews", reviewRouters);
+app.use("/api/payments", paymentRoutes);
 
 app.use(notFound);
 app.use(globalErrorHandler);

@@ -10,7 +10,7 @@ model Booking {
   technician   TechnicianProfile @relation(fields: [technicianId], references: [id])
   service      Service           @relation(fields: [serviceId], references: [id])
   
-  // payment Payment?
+  payment Payment?
   review Review?
 
   createdAt DateTime @default(now())

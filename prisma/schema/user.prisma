@@ -8,15 +8,12 @@ model User {
   role         Role
   activeStatus ActiveStatus       @default(ACTIVE)
   technician   TechnicianProfile?
+  
   bookings     Booking[]
   reviews      Review[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  //   subscription Subscription?
-  //   posts    Post[]
-  //   comments Comment[]
 
   @@map("users")
 }
