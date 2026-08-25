@@ -17,6 +17,7 @@ const createCheckoutSessionIntoDB = async (
     },
     include: {
       service: true,
+      customer: true,
     },
   });
 
@@ -46,6 +47,8 @@ const createCheckoutSessionIntoDB = async (
     mode: "payment",
 
     payment_method_types: ["card"],
+
+    customer_email: user.email,
 
     line_items: [
       {
