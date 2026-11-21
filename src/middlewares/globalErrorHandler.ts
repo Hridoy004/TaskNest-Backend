@@ -8,9 +8,14 @@ export const globalErrorHandler = (
   res: Response,
   next: NextFunction,
 ) => {
-  console.log("Error : ", err);
+  console.error("Request error:", err);
 
-  let statusCode;
+  let statusCode =
+    typeof err.statusCode === "number" &&
+    err.statusCode >= 400 &&
+    err.statusCode < 600
+      ? err.statusCode
+      : httpStatus.INTERNAL_SERVER_ERROR;
   let errorMessage = err.message || "Internal Server Error";
   let errorName = err.name || "Internal Server Error";
 
@@ -25,7 +30,7 @@ export const globalErrorHandler = (
       statusCode = httpStatus.BAD_REQUEST;
       errorMessage = "Foreign key constraint failed";
     } else if (err.code === "P2025") {
-      statusCode = httpStatus.BAD_REQUEST;
+      statusCode = httpStatus.NOT_FOUND;
       errorMessage =
         "An operation failed because it depends on one or more records that were required but not found";
     }
@@ -35,7 +40,7 @@ export const globalErrorHandler = (
       errorMessage =
         "Authentication failed against database server. Please check your credentials";
     } else if (err.errorCode === "P1001") {
-      statusCode = httpStatus.BAD_REQUEST;
+      statusCode = httpStatus.SERVICE_UNAVAILABLE;
       errorMessage = "Can not reach database server";
     }
   } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
@@ -43,11 +48,10 @@ export const globalErrorHandler = (
     errorMessage = "Error Occurred during query execution";
   }
 
-  res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+  res.status(statusCode).json({
     success: false,
-    statusCode: statusCode || httpStatus.INTERNAL_SERVER_ERROR,
+    statusCode,
     name: errorName,
     message: errorMessage,
-    error: err.stack,
   });
 };

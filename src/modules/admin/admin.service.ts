@@ -51,32 +51,29 @@ const getAllUsersFromDB = async (query: IUserQuery) => {
     });
   }
 
-  const users = await prisma.user.findMany({
-    where: {
-      AND: andConditions,
-    },
-
-    skip,
-    take: limit,
-
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
-
-    omit: {
-      password: true,
-    },
-
-    include: {
-      technician: true,
-    },
-  });
-
-  const total = await prisma.user.count({
-    where: {
-      AND: andConditions,
-    },
-  });
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        AND: andConditions,
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      omit: {
+        password: true,
+      },
+      include: {
+        technician: true,
+      },
+    }),
+    prisma.user.count({
+      where: {
+        AND: andConditions,
+      },
+    }),
+  ]);
 
   return {
     data: users,
@@ -152,50 +149,45 @@ const getAllBookingsFromDB = async (query: IBookingQuery) => {
     });
   }
 
-  const bookings = await prisma.booking.findMany({
-    where: {
-      AND: andConditions,
-    },
-
-    skip,
-    take: limit,
-
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
-
-    include: {
-      customer: {
-        omit: {
-          password: true,
-        },
+  const [bookings, total] = await Promise.all([
+    prisma.booking.findMany({
+      where: {
+        AND: andConditions,
       },
-
-      technician: {
-        include: {
-          user: {
-            omit: {
-              password: true,
+      skip,
+      take: limit,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      include: {
+        customer: {
+          omit: {
+            password: true,
+          },
+        },
+        technician: {
+          include: {
+            user: {
+              omit: {
+                password: true,
+              },
             },
           },
         },
-      },
-
-      service: {
-        include: {
-          category: true,
+        service: {
+          include: {
+            category: true,
+          },
         },
+        review: true,
       },
-
-      review: true,
-    },
-  });
-
-  const total = await prisma.booking.count({
-    where: {
-      AND: andConditions,
-    },
-  });
+    }),
+    prisma.booking.count({
+      where: {
+        AND: andConditions,
+      },
+    }),
+  ]);
 
   return {
     data: bookings,

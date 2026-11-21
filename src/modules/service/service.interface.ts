@@ -8,6 +8,7 @@ export interface ICreateService {
 export interface IServiceQuery {
   searchTerm?: string;
   categoryId?: string;
+  technicianId?: string;
   location?: string;
   minRating?: string;
   minPrice?: string;

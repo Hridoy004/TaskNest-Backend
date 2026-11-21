@@ -11,5 +11,7 @@ model Review {
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
+  @@index([technicianId, createdAt])
+  @@index([rating])
   @@map("reviews")
 }

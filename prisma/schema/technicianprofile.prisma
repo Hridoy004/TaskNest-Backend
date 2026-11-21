@@ -14,5 +14,8 @@ model TechnicianProfile {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  @@index([isAvailable, createdAt])
+  @@index([hourlyRate])
+  @@index([averageRating])
   @@map("technicianProfiles")
 }

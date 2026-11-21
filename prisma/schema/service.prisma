@@ -12,5 +12,8 @@ model Service {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([technicianId])
+  @@index([categoryId, createdAt])
+  @@index([price])
   @@map("services")
 }

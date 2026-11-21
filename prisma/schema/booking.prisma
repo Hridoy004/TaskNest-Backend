@@ -16,5 +16,9 @@ model Booking {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([customerId, createdAt])
+  @@index([technicianId, createdAt])
+  @@index([status, createdAt])
+  @@index([serviceId])
   @@map("bookings")
 }

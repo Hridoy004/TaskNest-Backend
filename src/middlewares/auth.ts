@@ -21,6 +21,9 @@ declare global {
 
 export const auth = (...requiredRoles: Role[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const createAuthError = (message: string, statusCode: number) =>
+      Object.assign(new Error(message), { statusCode });
+
     const token = req.cookies.accessToken
       ? req.cookies.accessToken
       : req.headers.authorization?.startsWith("Bearer ")
@@ -28,22 +31,24 @@ export const auth = (...requiredRoles: Role[]) => {
         : req.headers.authorization;
 
     if (!token) {
-      throw new Error(
+      throw createAuthError(
         "You are not logged in. Please log in to access this resource.",
+        401,
       );
     }
 
     const verifiedToken = jwtUtils.verifyToken(token, config.jwt_access_secret);
 
     if (!verifiedToken.success) {
-      throw new Error(verifiedToken.error);
+      throw createAuthError(verifiedToken.error, 401);
     }
 
     const { email, name, id, role } = verifiedToken.data as JwtPayload;
 
     if (requiredRoles.length && !requiredRoles.includes(role)) {
-      throw new Error(
+      throw createAuthError(
         "Forbidden. You don't have permission to access this resource.",
+        403,
       );
     }
 
@@ -57,11 +62,14 @@ export const auth = (...requiredRoles: Role[]) => {
     });
 
     if (!user) {
-      throw new Error("User not found. Please log in again.");
+      throw createAuthError("User not found. Please log in again.", 401);
     }
 
     if (user.activeStatus === "BLOCKED") {
-      throw new Error("Your account has been blocked. Please contact support.");
+      throw createAuthError(
+        "Your account has been blocked. Please contact support.",
+        403,
+      );
     }
 
     req.user = {

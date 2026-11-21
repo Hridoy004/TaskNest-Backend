@@ -15,5 +15,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([createdAt])
+  @@index([role, createdAt])
+  @@index([activeStatus, createdAt])
+  @@index([role, activeStatus, createdAt])
   @@map("users")
 }

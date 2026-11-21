@@ -1,6 +1,7 @@
 export interface ITechnicianQuery {
   searchTerm?: string;
   location?: string;
+  minRating?: string;
   minPrice?: string;
   maxPrice?: string;
   isAvailable?: string;

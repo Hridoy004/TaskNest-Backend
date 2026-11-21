@@ -7,12 +7,20 @@ import {
 } from "./technician.interface";
 
 const getAllTechniciansFromDB = async (query: ITechnicianQuery) => {
-  const limit = query.limit ? Number(query.limit) : 10;
-  const page = query.page ? Number(query.page) : 1;
+  const page = query.page === undefined ? 1 : Number(query.page);
+  const requestedLimit = query.limit === undefined ? 10 : Number(query.limit);
+  if (!Number.isInteger(page) || page < 1) {
+    throw Object.assign(new Error("page must be a positive integer"), {
+      statusCode: 400,
+    });
+  }
+  if (!Number.isInteger(requestedLimit) || requestedLimit < 1) {
+    throw Object.assign(new Error("limit must be a positive integer"), {
+      statusCode: 400,
+    });
+  }
+  const limit = Math.min(requestedLimit, 100);
   const skip = (page - 1) * limit;
-
-  const sortBy = query.sortBy || "createdAt";
-  const sortOrder = query.sortOrder || "desc";
 
   const andConditions: TechnicianProfileWhereInput[] = [];
 
@@ -34,6 +42,16 @@ const getAllTechniciansFromDB = async (query: ITechnicianQuery) => {
             mode: "insensitive",
           },
         },
+        {
+          services: {
+            some: {
+              title: {
+                contains: query.searchTerm,
+                mode: "insensitive",
+              },
+            },
+          },
+        },
       ],
     });
   }
@@ -50,53 +68,108 @@ const getAllTechniciansFromDB = async (query: ITechnicianQuery) => {
 
   // Availability Filter
   if (query.isAvailable !== undefined) {
+    if (query.isAvailable !== "true" && query.isAvailable !== "false") {
+      throw Object.assign(new Error("isAvailable must be true or false"), {
+        statusCode: 400,
+      });
+    }
     andConditions.push({
       isAvailable: query.isAvailable === "true",
     });
   }
 
+  const minRating = query.minRating === undefined
+    ? undefined
+    : Number(query.minRating);
+  if (
+    minRating !== undefined &&
+    (!Number.isFinite(minRating) || minRating < 0 || minRating > 5)
+  ) {
+    throw Object.assign(new Error("minRating must be between 0 and 5"), {
+      statusCode: 400,
+    });
+  }
+  if (minRating !== undefined) {
+    andConditions.push({
+      averageRating: { gte: minRating },
+    });
+  }
+
   // Price Filter
   if (query.minPrice || query.maxPrice) {
+    const minPrice =
+      query.minPrice === undefined ? undefined : Number(query.minPrice);
+    const maxPrice =
+      query.maxPrice === undefined ? undefined : Number(query.maxPrice);
+    if (
+      (minPrice !== undefined && (!Number.isFinite(minPrice) || minPrice < 0)) ||
+      (maxPrice !== undefined && (!Number.isFinite(maxPrice) || maxPrice < 0)) ||
+      (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice)
+    ) {
+      throw Object.assign(new Error("Price range is invalid"), {
+        statusCode: 400,
+      });
+    }
     andConditions.push({
       hourlyRate: {
-        gte: query.minPrice ? Number(query.minPrice) : undefined,
-        lte: query.maxPrice ? Number(query.maxPrice) : undefined,
+        gte: minPrice,
+        lte: maxPrice,
       },
     });
   }
 
-  const technicians = await prisma.technicianProfile.findMany({
-    where: {
-      AND: andConditions,
-    },
+  const allowedSortFields = [
+    "createdAt",
+    "updatedAt",
+    "hourlyRate",
+    "averageRating",
+    "experience",
+  ];
+  const sortBy = query.sortBy || "createdAt";
+  const sortOrder = query.sortOrder || "desc";
+  if (
+    !allowedSortFields.includes(sortBy) ||
+    (sortOrder !== "asc" && sortOrder !== "desc")
+  ) {
+    throw Object.assign(new Error("Invalid technician sort options"), {
+      statusCode: 400,
+    });
+  }
 
-    take: limit,
-    skip: skip,
-
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
-
-    include: {
-      user: {
-        omit: {
-          password: true,
+  const [technicians, total] = await Promise.all([
+    prisma.technicianProfile.findMany({
+      where: {
+        AND: andConditions,
+      },
+      take: limit,
+      skip,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      include: {
+        user: {
+          omit: {
+            password: true,
+          },
+        },
+        services: {
+          include: {
+            category: true,
+          },
+        },
+        _count: {
+          select: {
+            reviews: true,
+          },
         },
       },
-
-      services: {
-        include: {
-          category: true,
-        },
+    }),
+    prisma.technicianProfile.count({
+      where: {
+        AND: andConditions,
       },
-    },
-  });
-
-  const total = await prisma.technicianProfile.count({
-    where: {
-      AND: andConditions,
-    },
-  });
+    }),
+  ]);
 
   return {
     data: technicians,
